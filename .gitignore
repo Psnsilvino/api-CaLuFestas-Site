@@ -1,0 +1,22 @@
+# Cache do Go
+/pkg/
+
+# Dependências do Go Modules (exceto go.mod e go.sum)
+/vendor/
+
+# Arquivos de configuração e credenciais sensíveis
+.env
+config.yaml
+config.json
+
+# Logs e arquivos temporários
+*.log
+/tmp/
+
+# Diretórios específicos do IDE
+.idea/
+.vscode/
+
+# Arquivos do sistema
+.DS_Store
+Thumbs.db

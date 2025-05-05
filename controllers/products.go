@@ -10,6 +10,7 @@ import (
 	"github.com/Psnsilvino/CaluFestas-Site-api/models"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func GetProducts(c *gin.Context) {
@@ -29,21 +30,7 @@ func GetProducts(c *gin.Context) {
 		return
 	}
 
-	var productResponses []models.ProductResponse
-	for _, product := range products {
-    productResponses = append(productResponses, models.ProductResponse{
-        ID:                  product.ID.Hex(),
-        Nome:                product.Nome,
-        Categoria:           product.Categoria,
-        Quantidade:          product.Quantidade,
-        QuantidadeEmLocacao: product.QuantidadeEmLocacao,
-        Preco:               product.Preco,
-        CreatedAt:           product.CreatedAt,
-        UpdatedAt:           product.UpdatedAt,
-    })
-}
-
-	c.JSON(http.StatusOK, productResponses)
+	c.JSON(http.StatusOK, products)
 }
 
 func CreateProduct(c *gin.Context) {
@@ -52,6 +39,8 @@ func CreateProduct(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	product.ID = primitive.NewObjectID()
 
 	_, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("produtos").InsertOne(context.Background(), product)
 	if err != nil {

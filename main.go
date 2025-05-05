@@ -38,7 +38,7 @@ func main() {
 	r := routes.SetupRouter()
 
 	r.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"http://localhost:3000"}, // ou "*"
+        AllowOrigins:     []string{"http://localhost:5173"}, // ou "*"
         AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
         AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
         ExposeHeaders:    []string{"Content-Length"},

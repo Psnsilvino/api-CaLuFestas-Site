@@ -9,13 +9,15 @@ require (
 	go.mongodb.org/mongo-driver/v2 v2.1.0
 )
 
-require github.com/gin-contrib/cors v1.7.5 // indirect
+require (
+	github.com/gin-contrib/cors v1.7.5
+	github.com/kr/text v0.2.0 // indirect
+)
 
 require (
 	github.com/bytedance/sonic v1.13.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
-	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/gin-contrib/sse v1.0.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
