@@ -29,7 +29,7 @@
 		m := gomail.NewMessage()
 		m.SetHeader("From", "noreply@yourdomain.com")
 		m.SetHeader("To", to)
-		m.SetHeader("Subject", "Your OTP for Real Madrid Shop")
+		m.SetHeader("Subject", "Seu codigo para CaLu - Festas e Eventos")
 		m.SetBody("text/plain", fmt.Sprintf("Your OTP for sign up is: %s", otp))
 
 		return s.dialer.DialAndSend(m)

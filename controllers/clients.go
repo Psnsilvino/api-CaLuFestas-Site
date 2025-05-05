@@ -108,7 +108,7 @@ func Login(c *gin.Context) {
 func ForgotPassword(c *gin.Context)  {
 
 	var email string
-	var emailModel models.Email
+	var emailModel models.EmailReset
 	if err := c.ShouldBindJSON(&emailModel); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -157,5 +157,80 @@ func ForgotPassword(c *gin.Context)  {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"message": "User registered successfully"})
+
+}
+
+func ResetPassword(c *gin.Context)  {
+
+	var email, newPassword, otpcode string
+	var emailResetModel models.EmailReset
+	if err := c.ShouldBindJSON(&emailResetModel); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	email = emailResetModel.Email
+	newPassword = emailResetModel.NewPassword
+	otpcode = emailResetModel.OTPCode
+
+	// verificar se o cliente existe
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var client models.Client
+	err := database.DB.Database(os.Getenv("DB_NAME")).Collection("clients").FindOne(ctx, bson.M{"email": email}).Decode(&client)
+	if err == mongo.ErrNoDocuments {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	var entry models.PasswordResetEntry
+	err = database.DB.Database(os.Getenv("DB_NAME")).Collection("senhasEsquecidas").FindOne(ctx, bson.M{"email": email}).Decode(&entry)
+	if err == mongo.ErrNoDocuments {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	// Check if OTP is expired
+	if time.Now().UTC().After(entry.ExpiresAt) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "OTP expired"})
+		return
+	}
+
+	// Verify OTP
+	if entry.OTPCode != otpcode {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OTP", "code 1": entry.OTPCode, "code 2": emailResetModel.OTPCode})
+		return
+	}
+
+	// Check if the new password is the same as the old one
+	if err := bcrypt.CompareHashAndPassword([]byte(client.Senha), []byte(newPassword)); err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Senhas iguais"})
+		return
+	}
+
+	// Hash the new password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error hashing password"})
+		return
+	}
+
+	client.Senha = string(hashedPassword)
+
+	result, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("clients").UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": bson.M{"senha": client.Senha}})
+
+	if result.MatchedCount == 0 {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Usuário não encontrado"})
+        return
+    }
+
+	c.JSON(http.StatusOK, gin.H{"message": "Senha atualizada com sucesso"})
 
 }
