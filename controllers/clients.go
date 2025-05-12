@@ -180,7 +180,7 @@ func ResetPassword(c *gin.Context)  {
 	var client models.Client
 	err := database.DB.Database(os.Getenv("DB_NAME")).Collection("clients").FindOne(ctx, bson.M{"email": email}).Decode(&client)
 	if err == mongo.ErrNoDocuments {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "o"})
 		return
 	} else if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
@@ -188,9 +188,9 @@ func ResetPassword(c *gin.Context)  {
 	}
 
 	var entry models.PasswordResetEntry
-	err = database.DB.Database(os.Getenv("DB_NAME")).Collection("senhasEsquecidas").FindOne(ctx, bson.M{"email": email}).Decode(&entry)
+	err = database.DB.Database(os.Getenv("DB_NAME")).Collection("senhasEsquecidas").FindOne(ctx, bson.M{"email": email, "isverified": false}).Decode(&entry)
 	if err == mongo.ErrNoDocuments {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "ostra"})
 		return
 	} else if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
@@ -205,7 +205,7 @@ func ResetPassword(c *gin.Context)  {
 
 	// Verify OTP
 	if entry.OTPCode != otpcode {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OTP", "code 1": entry.OTPCode, "code 2": emailResetModel.OTPCode})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid OTP"})
 		return
 	}
 
@@ -228,6 +228,13 @@ func ResetPassword(c *gin.Context)  {
 
 	if result.MatchedCount == 0 {
         c.JSON(http.StatusNotFound, gin.H{"error": "Usuário não encontrado"})
+        return
+    }
+
+	result, err = database.DB.Database(os.Getenv("DB_NAME")).Collection("senhasEsquecidas").UpdateOne(ctx, bson.M{"email": email, "isverified": false}, bson.M{"$set": bson.M{"isverified": true, "expiresat": time.Now().UTC()}})
+
+	if result.MatchedCount == 0 {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Sem requisicao"})
         return
     }
 
