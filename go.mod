@@ -9,6 +9,8 @@ require (
 	go.mongodb.org/mongo-driver/v2 v2.1.0
 )
 
+require github.com/golang-jwt/jwt/v5 v5.2.2 // direct
+
 require (
 	github.com/gin-contrib/cors v1.7.5
 	github.com/kr/text v0.2.0 // indirect

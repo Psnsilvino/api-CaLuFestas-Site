@@ -9,7 +9,6 @@ import (
 	"github.com/Psnsilvino/CaluFestas-Site-api/database"
 	"github.com/Psnsilvino/CaluFestas-Site-api/routes"
 	"github.com/Psnsilvino/CaluFestas-Site-api/utils/email"
-	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -37,18 +36,10 @@ func main() {
 	// Setup routes
 	r := routes.SetupRouter()
 
-	r.Use(cors.New(cors.Config{
-        AllowOrigins:     []string{"http://localhost:5173"}, // ou "*"
-        AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-        AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-        ExposeHeaders:    []string{"Content-Length"},
-        AllowCredentials: true,
-    }))
-
 	// Start server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-	log.Fatal(r.Run(":" + port))
+	log.Fatal(r.Run(": " + port))
 }

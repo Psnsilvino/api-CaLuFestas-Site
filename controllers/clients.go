@@ -10,6 +10,7 @@ import (
 	"github.com/Psnsilvino/CaluFestas-Site-api/models"
 	"github.com/Psnsilvino/CaluFestas-Site-api/utils/email"
 	"github.com/Psnsilvino/CaluFestas-Site-api/utils/otputil"
+	"github.com/golang-jwt/jwt/v5"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -98,10 +99,19 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id": client.ID,
+		"expire": time.Now().UTC().Add(48 * time.Hour),
+	})
+
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error generating token"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"nome": client.Nome,
-		"email": client.Email,
-		"senha": client.Senha,
+		"token": tokenString,
 	})
 }
 
@@ -160,9 +170,9 @@ func ForgotPassword(c *gin.Context)  {
 
 }
 
-func ResetPassword(c *gin.Context)  {
+func VerifyCode(c *gin.Context)  {
 
-	var email, newPassword, otpcode string
+	var email, otpcode string
 	var emailResetModel models.EmailReset
 	if err := c.ShouldBindJSON(&emailResetModel); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -170,7 +180,6 @@ func ResetPassword(c *gin.Context)  {
 	}
 
 	email = emailResetModel.Email
-	newPassword = emailResetModel.NewPassword
 	otpcode = emailResetModel.OTPCode
 
 	// verificar se o cliente existe
@@ -209,6 +218,42 @@ func ResetPassword(c *gin.Context)  {
 		return
 	}
 
+	result, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("senhasEsquecidas").UpdateOne(ctx, bson.M{"email": email, "isverified": false}, bson.M{"$set": bson.M{"isverified": true, "expiresat": time.Now().UTC()}})
+
+	if result.MatchedCount == 0 {
+        c.JSON(http.StatusNotFound, gin.H{"error": "Sem requisicao"})
+        return
+    }
+
+	c.JSON(http.StatusOK, gin.H{"message": "Codigo correto"})
+
+}
+
+func UpdatePassword(c *gin.Context)  {
+
+	var email, newPassword string;
+	var passwordResetModel models.PasswordReset
+	if err := c.ShouldBindJSON(&passwordResetModel); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	email = passwordResetModel.Email 
+	newPassword = passwordResetModel.Password 
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	var client models.Client
+	err := database.DB.Database(os.Getenv("DB_NAME")).Collection("clients").FindOne(ctx, bson.M{"email": email}).Decode(&client)
+	if err == mongo.ErrNoDocuments {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "o"})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
 	// Check if the new password is the same as the old one
 	if err := bcrypt.CompareHashAndPassword([]byte(client.Senha), []byte(newPassword)); err == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Senhas iguais"})
@@ -225,13 +270,6 @@ func ResetPassword(c *gin.Context)  {
 	client.Senha = string(hashedPassword)
 
 	result, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("clients").UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": bson.M{"senha": client.Senha}})
-
-	if result.MatchedCount == 0 {
-        c.JSON(http.StatusNotFound, gin.H{"error": "Usuário não encontrado"})
-        return
-    }
-
-	result, err = database.DB.Database(os.Getenv("DB_NAME")).Collection("senhasEsquecidas").UpdateOne(ctx, bson.M{"email": email, "isverified": false}, bson.M{"$set": bson.M{"isverified": true, "expiresat": time.Now().UTC()}})
 
 	if result.MatchedCount == 0 {
         c.JSON(http.StatusNotFound, gin.H{"error": "Sem requisicao"})

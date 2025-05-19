@@ -12,6 +12,7 @@ func ClientRoutes(r *gin.RouterGroup) {
 		clients.POST("/", controllers.Register)
 		clients.POST("/login", controllers.Login)
 		clients.POST("/ForgotPassword", controllers.ForgotPassword)
-		clients.POST("/ResetPassword", controllers.ResetPassword)
+		clients.POST("/verifyCode", controllers.VerifyCode)
+		clients.POST("/ResetPassword", controllers.UpdatePassword)
 	}
 }
