@@ -6,9 +6,9 @@ import (
 )
 
 func ProductRoutes(r *gin.RouterGroup) {
-	clients := r.Group("/products")
+	products := r.Group("/products")
 	{
-		clients.GET("/", controllers.GetProducts)
-		clients.POST("/register", controllers.CreateProduct)
+		products.GET("/", controllers.GetProducts)
+		products.POST("/register", controllers.CreateProduct)
 	}
 }

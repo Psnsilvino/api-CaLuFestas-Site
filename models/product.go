@@ -10,7 +10,7 @@ type Product struct {
 	Categoria           string             `json:"categoria"`
 	Subcategoria        string             `json:"subcategoria"`
 	Quantidade          int                `json:"quantidade"`
-	QuantidadeEmLocacao int                `json:"quantidadeEmLocacao"`
+	QuantidadeEmLocacao int                `json:"quantidadeemlocacao"`
 	Preco               float64            `json:"preco"`
 	Descricao           string             `json:"descricao"`
 	Imagem              string             `json:"imagem"`

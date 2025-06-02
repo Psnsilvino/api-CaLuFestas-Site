@@ -20,6 +20,7 @@ func SetupRouter() *gin.Engine {
 	{
 		ClientRoutes(api)   // Adiciona rotas de usuários
 		ProductRoutes(api)
+		LocationRoutes(api)
 	}
 
 	return router
