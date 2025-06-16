@@ -20,4 +20,5 @@ type Locacao struct {
 	Pagamento    string             `json:"pagamento" bson:"pagamento"`
 	Total        float64            `json:"total" bson:"total"`
 	Items        []Item             `json:"items" bson:"items"`
+	Estado       string             `json:"estado" bson:"estado"`
 }

@@ -8,7 +8,6 @@ import (
 func ClientRoutes(r *gin.RouterGroup) {
 	clients := r.Group("/clients")
 	{
-		clients.GET("/", controllers.GetClients)
 		clients.POST("/", controllers.Register)
 		clients.POST("/login", controllers.Login)
 		clients.POST("/ForgotPassword", controllers.ForgotPassword)

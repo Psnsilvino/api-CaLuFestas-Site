@@ -100,7 +100,8 @@ func Login(c *gin.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id": client.ID,
+		"email": client.Email,
+		"cargo": client.Cargo,
 		"expire": time.Now().UTC().Add(48 * time.Hour),
 	})
 

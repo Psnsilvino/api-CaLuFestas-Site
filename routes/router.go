@@ -3,6 +3,7 @@ package routes
 import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	middle"github.com/Psnsilvino/CaluFestas-Site-api/middleware"
 )
 
 func SetupRouter() *gin.Engine {
@@ -17,11 +18,17 @@ func SetupRouter() *gin.Engine {
     }))
 
 	api := router.Group("/api") // Agrupa todas as rotas dentro de /api
-	{
-		ClientRoutes(api)   // Adiciona rotas de usuários
-		ProductRoutes(api)
-		LocationRoutes(api)
-	}
+	ClientRoutes(api)   // Adiciona rotas de usuários
+
+	// Agora criamos um grupo protegido pelo AuthMiddleware
+    protected := api.Group("/")
+    protected.Use(middle.AuthMiddleware()) // tudo que estiver aqui exigirá o JWT
+
+    // Rotas protegidas
+    PrivateClientRoutes(protected)
+    ProductRoutes(protected)
+    LocationRoutes(protected)
+	
 
 	return router
 }
