@@ -9,5 +9,6 @@ func PrivateClientRoutes(r *gin.RouterGroup) {
 	privateClients := r.Group("/privateClients")
 	{
 		privateClients.GET("/", controllers.GetClients)
+		privateClients.GET("/me", controllers.Me)
 	}
 }

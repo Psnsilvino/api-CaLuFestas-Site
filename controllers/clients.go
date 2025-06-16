@@ -280,3 +280,13 @@ func UpdatePassword(c *gin.Context)  {
 	c.JSON(http.StatusOK, gin.H{"message": "Senha atualizada com sucesso"})
 
 }
+
+func Me(c *gin.Context) {
+	email := c.GetString("user")
+    cargo := c.GetString("cargo")
+
+    c.JSON(http.StatusOK, gin.H{
+        "email": email,
+        "cargo": cargo,
+    })
+} 

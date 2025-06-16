@@ -19,6 +19,7 @@ func SetupRouter() *gin.Engine {
 
 	api := router.Group("/api") // Agrupa todas as rotas dentro de /api
 	ClientRoutes(api)   // Adiciona rotas de usuários
+    ProductRoutes(api)
 
 	// Agora criamos um grupo protegido pelo AuthMiddleware
     protected := api.Group("/")
@@ -26,7 +27,7 @@ func SetupRouter() *gin.Engine {
 
     // Rotas protegidas
     PrivateClientRoutes(protected)
-    ProductRoutes(protected)
+    PrivateProductRoutes(protected)
     LocationRoutes(protected)
 	
 
