@@ -41,6 +41,7 @@ func Register(c *gin.Context) {
 	}
 	client.Senha = string(hashedPassword)
 	client.ID = primitive.NewObjectID()
+	client.Cargo = "user"
 
 	_, err = database.DB.Database(os.Getenv("DB_NAME")).Collection("clients").InsertOne(context.Background(), client)
 	if err != nil {

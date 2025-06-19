@@ -9,5 +9,9 @@ func LocationRoutes(r *gin.RouterGroup) {
 	location := r.Group("/locations")
 	{
 		location.POST("/", controllers.CreateLocation)
+		location.GET("/", controllers.GetLocations)
+		location.PUT("/:id", controllers.UpdateLocation)
+		location.DELETE("/:id", controllers.DeleteLocation)
+		location.POST("/cliente", controllers.LocationsByClient)
 	}
 }
