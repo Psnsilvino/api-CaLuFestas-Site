@@ -11,7 +11,7 @@ func LocationRoutes(r *gin.RouterGroup) {
 		location.POST("/", controllers.CreateLocation)
 		location.GET("/", controllers.GetLocations)
 		location.PUT("/:id", controllers.UpdateLocation)
-		location.DELETE("/:id", controllers.DeleteLocation)
+		location.POST("/:id/delete", controllers.DeleteLocation)
 		location.POST("/cliente", controllers.LocationsByClient)
 	}
 }

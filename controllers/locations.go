@@ -74,57 +74,100 @@ func DeleteLocation(c *gin.Context) {
 	id := c.Param("id")
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
 		return
 	}
 
-	collection := database.DB.Database(os.Getenv("DB_NAME")).Collection("locations")
-	result, err := collection.DeleteOne(context.Background(), bson.M{"_id": objID})
+	var payload struct {
+		Items []models.Item `json:"items"`
+	}
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Erro ao processar itens enviados"})
+		return
+	}
+
+	// Devolver itens ao estoque
+	for _, item := range payload.Items {
+		filter := bson.M{"nome": item.Nome}
+		update := bson.M{
+			"$inc": bson.M{
+				"quantidadeemlocacao": -item.Quantidade,
+			},
+		}
+		_, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("produtos").UpdateOne(context.Background(), filter, update)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao devolver produto: " + item.Nome})
+			return
+		}
+	}
+
+	// Deleta a locação
+	result, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("locations").DeleteOne(context.Background(), bson.M{"_id": objID})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete location"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao deletar locação"})
 		return
 	}
 	if result.DeletedCount == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Location not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Locação não encontrada"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Location deleted successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Locação excluída com sucesso"})
 }
+
 
 func UpdateLocation(c *gin.Context) {
 	id := c.Param("id")
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
 		return
 	}
 
 	var updatedData models.Locacao
 	if err := c.ShouldBindJSON(&updatedData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Erro ao fazer binding do JSON"})
 		return
 	}
 
+	// Devolve itens ao estoque se a locação for recusada ou concluída
+	if updatedData.Estado == "Recusada" || updatedData.Estado == "Concluida" {
+		for _, item := range updatedData.Items {
+			filter := bson.M{"nome": item.Nome}
+			update := bson.M{
+				"$inc": bson.M{
+					"quantidadeemlocacao": -item.Quantidade,
+				},
+			}
+			_, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("produtos").UpdateOne(context.Background(), filter, update)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao devolver produto: " + item.Nome})
+				return
+			}
+		}
+	}
+
+	// Atualiza estado da locação
 	update := bson.M{
 		"$set": bson.M{
-			"estado":   updatedData.Estado,
+			"estado": updatedData.Estado,
 		},
 	}
 
 	collection := database.DB.Database(os.Getenv("DB_NAME")).Collection("locations")
 	result, err := collection.UpdateOne(context.Background(), bson.M{"_id": objID}, update)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update location"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar locação"})
 		return
 	}
 	if result.MatchedCount == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Location not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Locação não encontrada"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Location updated successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Locação atualizada com sucesso"})
 }
+
 
 func LocationsByClient(c *gin.Context) {
 	var request models.ClientLocation
