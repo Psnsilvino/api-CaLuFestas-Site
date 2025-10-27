@@ -13,5 +13,5 @@ type Product struct {
 	QuantidadeEmLocacao int                `json:"quantidadeemlocacao"`
 	Preco               float64            `json:"preco"`
 	Descricao           string             `json:"descricao"`
-	Imagem              string             `json:"imagem"`
+	Imagem              []string           `json:"imagem"`
 }
