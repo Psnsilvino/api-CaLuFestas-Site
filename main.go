@@ -41,5 +41,5 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-	log.Fatal(r.Run(": " + port))
+	log.Fatal(r.Run(":" + port))
 }
