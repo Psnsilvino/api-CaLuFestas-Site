@@ -101,6 +101,7 @@ func Login(c *gin.Context) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"nome": client.Nome,
 		"email": client.Email,
 		"cargo": client.Cargo,
 		"expire": time.Now().UTC().Add(48 * time.Hour),
@@ -220,7 +221,7 @@ func VerifyCode(c *gin.Context)  {
 		return
 	}
 
-	result, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("senhasEsquecidas").UpdateOne(ctx, bson.M{"email": email, "isverified": false}, bson.M{"$set": bson.M{"isverified": true, "expiresat": time.Now().UTC()}})
+	result, _ := database.DB.Database(os.Getenv("DB_NAME")).Collection("senhasEsquecidas").UpdateOne(ctx, bson.M{"email": email, "isverified": false}, bson.M{"$set": bson.M{"isverified": true, "expiresat": time.Now().UTC()}})
 
 	if result.MatchedCount == 0 {
         c.JSON(http.StatusNotFound, gin.H{"error": "Sem requisicao"})
@@ -271,7 +272,7 @@ func UpdatePassword(c *gin.Context)  {
 
 	client.Senha = string(hashedPassword)
 
-	result, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("clients").UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": bson.M{"senha": client.Senha}})
+	result, _ := database.DB.Database(os.Getenv("DB_NAME")).Collection("clients").UpdateOne(ctx, bson.M{"email": email}, bson.M{"$set": bson.M{"senha": client.Senha}})
 
 	if result.MatchedCount == 0 {
         c.JSON(http.StatusNotFound, gin.H{"error": "Sem requisicao"})
