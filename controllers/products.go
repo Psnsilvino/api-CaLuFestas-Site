@@ -44,7 +44,7 @@ func CreateProduct(c *gin.Context) {
 
 	_, err := database.DB.Database(os.Getenv("DB_NAME")).Collection("produtos").InsertOne(context.Background(), product)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create product"})
+		c.JSON(http.StatusInternalServerError, gin.H{"errr": "Failed to create product 6"})
 		return
 	}
 
