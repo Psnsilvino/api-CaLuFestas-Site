@@ -39,7 +39,7 @@
 		m := gomail.NewMessage()
 		m.SetHeader("From", "noreply@yourdomain.com")
 		m.SetHeader("To", to)
-		m.SetHeader("Subject", "Password Reset Token for Real Madrid Shop")
+		m.SetHeader("Subject", "Seu codigo para CaLu - Festas e Eventos")
 		m.SetBody("text/plain", fmt.Sprintf("Your password reset token is: %s", token))
 		return s.dialer.DialAndSend(m)
 	}
