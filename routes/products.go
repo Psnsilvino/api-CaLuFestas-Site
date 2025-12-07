@@ -9,7 +9,6 @@ func ProductRoutes(r *gin.RouterGroup) {
 	products := r.Group("/products")
 	{
 		products.GET("/", controllers.GetProducts)
-		products.PUT("/:id", controllers.UpdateProduct)
-		products.DELETE("/:nome", controllers.DeleteProduct)
+		products.PUT("/:nome", controllers.UpdateProduct)
 	}
 }

@@ -52,12 +52,7 @@ func CreateProduct(c *gin.Context) {
 }
 
 func UpdateProduct(c *gin.Context) {
-	id := c.Param("id")
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
-		return
-	}
+	name := c.Param("nome")
 
 	var updateData models.Product
 	if err := c.ShouldBindJSON(&updateData); err != nil {
@@ -70,14 +65,14 @@ func UpdateProduct(c *gin.Context) {
 	}
 
 	collection := database.DB.Database(os.Getenv("DB_NAME")).Collection("produtos")
-	result, err := collection.UpdateByID(context.Background(), objID, update)
+	result, err := collection.UpdateOne(context.Background(), bson.M{"nome": name}, update)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update product"})
 		return
 	}
 
 	if result.MatchedCount == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+		c.JSON(http.StatusNotFound, gin.H{"error": name})
 		return
 	}
 
