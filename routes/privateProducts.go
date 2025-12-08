@@ -10,5 +10,6 @@ func PrivateProductRoutes(r *gin.RouterGroup) {
 	{
 		privateProducts.POST("/register", controllers.CreateProduct)
 		privateProducts.DELETE("/:nome", controllers.DeleteProduct)
+		privateProducts.PUT("/:nome", controllers.UpdateProduct)
 	}
 }
